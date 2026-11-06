@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pizzaria
+      POSTGRES_USER: pizzaria
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pizzaria -d pizzaria"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+
+  api:
+    build: ./api
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: db
+      DB_NAME: pizzaria
+      DB_USER: pizzaria
+      DB_PASSWORD: secret
+      REDIS_HOST: redis
+      PREPARO_SEGUNDOS: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  worker:
+    build: ./worker
+    environment:
+      DB_HOST: db
+      DB_NAME: pizzaria
+      DB_USER: pizzaria
+      DB_PASSWORD: secret
+      REDIS_HOST: redis
+      PREPARO_SEGUNDOS: "1"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  pgdata:
