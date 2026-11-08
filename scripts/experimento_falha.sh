@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Experimento de falha: derruba o worker, envia pedidos, restaura o worker e observa a fila drenar.
-# Rode no Git Bash / WSL / Linux / macOS.  Registre a saida:  ./scripts/experimento_falha.sh | tee resultados/falha.log
+# Rode no Git Bash / WSL / Linux / macOS.  Registre a saida:  bash scripts/experimento_falha.sh | tee resultados/falha.log
 API=${API_URL:-http://localhost:8000}
 
 echo "== 1) Estado inicial =="
@@ -10,7 +10,7 @@ echo "== 2) Derrubando o worker =="
 docker compose stop worker
 
 echo "== 3) Enviando 20 pedidos com o worker FORA do ar =="
-python3 scripts/experimento.py --n 20 --sem-espera --rotulo falha-worker-parado
+py scripts/experimento.py --n 20 --sem-espera --rotulo falha-worker-parado
 echo "Metricas com worker parado (esperado: pedidos 'recebido' acumulados na fila):"
 curl -s $API/metricas; echo
 
